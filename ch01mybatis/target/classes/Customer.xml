@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 如果是动态代理，
+1)namespace必须和dao接口的路径保持一致
+2)dao接口里面的方法必须和sql语句的id保持一致
+3)dao接口参数和返回值类型和映射文件的parameterType和resultType保持一致-->
+<mapper namespace="cn.sm1234.dao.CustomerDao">
+
+	<!--sql片段-->
+	<sql id="customerField">
+		id,name,gender,telephone
+	</sql>
+
+	<!-- 添加 -->
+	<insert id="saveCustomer" parameterType="customer">
+		INSERT INTO t_customer(NAME,gender,telephone) VALUES(#{name},#{gender},#{telephone})
+	</insert>
+
+	<!-- 修改 -->	
+	<update id="updateCustomer" parameterType="customer">
+		UPDATE t_customer SET NAME = #{name} WHERE id = #{id}
+	</update>
+	
+	<!-- 查询所有数据 -->
+	<select id="queryAllCustomer" resultType="customer">
+		SELECT * FROM t_customer
+	</select>
+	
+	<!-- 根据id查询 -->
+	<select id="queryCustomerById" parameterType="Integer" resultType="customer">
+		SELECT * FROM t_customer WHERE id=#{value}
+	</select>
+	
+	<!-- 根据name模糊查询 -->
+	<select id="queryCustomerByName"  parameterType="string" resultType="customer">
+		SELECT * FROM t_customer WHERE NAME LIKE #{value}
+	</select>
+	
+	<!-- 删除 -->
+	<delete id="deleteCustomer" parameterType="int">
+		DELETE FROM t_customer WHERE id=#{value}
+	</delete>
+
+	<insert id="testParameterType" parameterType="string">
+		INSERT INTO t_customer(NAME) VALUES(#{name})
+	</insert>
+
+	<insert id="testParameterType2" parameterType="customer">
+		INSERT INTO t_customer(NAME,gender,telephone) VALUES(#{name},#{gender},#{telephone})
+	</insert>
+
+	<insert id="testParameterType3" parameterType="cn.sm1234.domain.CustomerVo">
+		INSERT INTO t_customer(NAME,gender,telephone) VALUES(#{customer.name},#{customer.gender},#{customer.telephone})
+	</insert>
+
+	<select id="queryTotalCount" resultType="long">
+		SELECT COUNT(*) FROM t_customer
+	</select>
+
+	<select id="queryCustomer" parameterType="int" resultType="customer">
+		SELECT *FROM t_customer WHERE id=#{value}
+	</select>
+
+	<resultMap id="customerResultMap" type="cn.sm1234.domain.CustomerRM">
+		<!--id 主键映射-->
+		<id column="id" property="custId"/>
+		<result column="name" property="custName"/>
+		<result column="gender" property="custGender"/>
+		<result column="telephone" property="custTelephone"/>
+	</resultMap>
+
+	<select id="queryCustomerResultMap" parameterType="int" resultMap="customerResultMap">
+		SELECT *FROM t_customer WHERE id=#{value}
+	</select>
+	
+	<!--<select id="queryByNameAndTelephone" parameterType="customer" resultType="customer">-->
+		<!--select *from t_customer where 1=1-->
+		<!--<if test="name!=null and name!=''">-->
+			<!--and name like #{name}-->
+		<!--</if>-->
+		<!--<if test="telephone!=null and telephone!=''">-->
+			<!--and telephone like #{telephone}-->
+		<!--</if>-->
+	<!--</select>-->
+
+	<!--<select id="queryByNameAndTelephone" parameterType="customer" resultType="customer">-->
+		<!--select *from t_customer-->
+		<!--<where>&lt;!&ndash;where 条件，当只有一个条件满足的时候自动将and去掉&ndash;&gt;-->
+			<!--<if test="name!=null and name!=''">-->
+				<!--and name like #{name}-->
+			<!--</if>-->
+			<!--<if test="telephone!=null and telephone!=''">-->
+				<!--and telephone like #{telephone}-->
+			<!--</if>-->
+		<!--</where>-->
+	<!--</select>-->
+
+	<select id="queryByNameAndTelephone" parameterType="customer" resultType="customer">
+		select <include refid="customerField"/> from t_customer
+		<where><!--where 条件，当只有一个条件满足的时候自动将and去掉-->
+			<if test="name!=null and name!=''">
+				and name like #{name}
+			</if>
+			<if test="telephone!=null and telephone!=''">
+				and telephone like #{telephone}
+			</if>
+		</where>
+	</select>
+	
+	
+	<delete id="deleteCustomerByIn" parameterType="customer">
+		delete from t_customer where
+
+		<!--代替id in(5,6,8,9)
+		collection:需要遍历的属性
+		item:遍历的变量
+		open:循环前面的sql语句
+		close:循环后面的sql语句
+		seperate:分隔符
+		-->
+		<foreach collection="ids" item="id" open="id in(" close=")" separator=",">
+			#{id}
+		</foreach>
+	</delete>
+
+</mapper>
